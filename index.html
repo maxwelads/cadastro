@@ -190,7 +190,7 @@ body{font-family:'Montserrat',system-ui,sans-serif;background:var(--off);color:v
     <!-- ================= ETAPA 2 ================= -->
     <section class="passo" data-passo="2">
       <h2 class="passo-tit">Dados para o contrato</h2>
-      <p class="passo-sub">O contrato fica pronto para assinatura em até 48h. <b>O link chega diretamente no e-mail informado.</b> Alguns campos já vieram preenchidos da etapa anterior — é só conferir.</p>
+      <p class="passo-sub">O contrato fica pronto para assinatura em até 48h. Alguns campos já vieram preenchidos da etapa anterior — é só conferir.</p>
 
       <div class="secao">Empresa</div>
       <div class="grade">
@@ -210,7 +210,7 @@ body{font-family:'Montserrat',system-ui,sans-serif;background:var(--off);color:v
           </select><span class="msg">Selecione uma opção</span></div>
         <div class="campo"><label>Profissão <span class="ob">*</span></label><input name="profissao" required><span class="msg">Informe a profissão</span></div>
         <div class="campo"><label>WhatsApp pessoal <span class="ob">*</span></label><input name="whatsapp_pessoal" required data-mascara="fone" inputmode="tel" placeholder="(99) 99999-9999"><span class="msg">WhatsApp inválido</span></div>
-        <div class="campo"><label>E-mail <span class="ob">*</span></label><span class="dica">O link do contrato chega aqui</span><input name="email_contrato" type="email" required data-copia="email"><span class="msg">E-mail inválido</span></div>
+        <div class="campo"><label>E-mail <span class="ob">*</span></label><input name="email_contrato" type="email" required data-copia="email"><span class="msg">E-mail inválido</span></div>
       </div>
 
       <div class="secao">Endereço</div>
@@ -225,8 +225,8 @@ body{font-family:'Montserrat',system-ui,sans-serif;background:var(--off);color:v
         <div class="campo"><label>Plano escolhido <span class="ob">*</span></label>
           <select name="plano" required>
             <option value="">Selecionar opção…</option>
-            <option data-valor="500">Gestão de tráfego</option>
-            <option data-valor="">Personalizado</option>
+            <option>Gestão de tráfego</option>
+            <option>Personalizado</option>
           </select><span class="msg">Selecione um plano</span></div>
         <div class="campo"><label>Valor do contrato (mês) <span class="ob">*</span></label><input name="valor_mensal" required data-mascara="moeda" inputmode="numeric" placeholder="R$ 0,00"><span class="msg">Informe o valor</span></div>
         <div class="campo"><label>E-mail da testemunha</label><input name="email_testemunha" type="email"><span class="msg">E-mail inválido</span></div>
@@ -242,7 +242,7 @@ body{font-family:'Montserrat',system-ui,sans-serif;background:var(--off);color:v
     <section class="sucesso" id="sucesso">
       <div class="icone"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
       <h2>Cadastro recebido!</h2>
-      <p>Obrigado. Em até 48h o link do contrato chega no seu e-mail, e o passo a passo de acesso vai pelo WhatsApp.</p>
+      <p>Obrigado. Em até 48h seu contrato fica pronto para assinatura. Qualquer dúvida, falamos pelo WhatsApp.</p>
     </section>
   </form>
 </main>
@@ -337,11 +337,6 @@ $('#avancar').addEventListener('click', () => {
 });
 $('#voltar').addEventListener('click', () => irPara(1));
 
-// Preenche o valor ao escolher o plano
-form.elements.plano.addEventListener('change', e => {
-  const v = e.target.selectedOptions[0]?.dataset.valor; const campo = form.elements.valor_mensal;
-  if(v){ campo.value = mascaras.moeda(String(v*100)); valida(campo.closest('.campo')); }
-});
 
 // ---- Envio
 form.addEventListener('submit', async e => {
