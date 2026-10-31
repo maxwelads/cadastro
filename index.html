@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cadastro de Cliente — Maxwel Ads</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ====== CONFIGURAÇÃO ======
+   Cole aqui a URL do Web App do Google Apps Script (ver arquivo apps-script.gs).
+   Enquanto estiver vazio, o formulário funciona em modo de teste (não envia nada). */
+:root{
+  --roxo:#5B3FD9; --roxo-2:#8B74F0; --roxo-claro:#EEEBFC;
+  --grafite:#202024; --grafite-2:#4A4A52; --cinza:#8A8A94; --linha:#E3E1EA;
+  --off:#F6F4EF; --branco:#FFFFFF; --erro:#C8324B; --ok:#1F8F5F;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Montserrat',system-ui,sans-serif;background:var(--off);color:var(--grafite);line-height:1.5;-webkit-font-smoothing:antialiased}
+
+/* Topo */
+.topo{background:var(--grafite);color:var(--off);padding:28px 16px 88px}
+.topo-in{max-width:880px;margin:0 auto}
+.marca{display:flex;align-items:center;gap:12px}
+.marca svg{width:40px;height:40px}
+.marca-nome{font-weight:800;letter-spacing:.06em;font-size:18px}
+.marca-nome b{color:var(--roxo-2);font-weight:800}
+.marca-slogan{font-size:11px;color:var(--cinza);letter-spacing:.12em;text-transform:uppercase;margin-top:-2px}
+.topo h1{font-size:clamp(26px,5vw,38px);font-weight:800;line-height:1.15;margin-top:44px;max-width:560px}
+.topo p{color:#BDBCC6;margin-top:12px;max-width:560px;font-size:15px}
+
+/* Cartão */
+.cartao{max-width:880px;margin:-56px auto 40px;background:var(--branco);border-radius:20px;box-shadow:0 20px 50px -20px rgba(32,32,36,.25);overflow:hidden}
+@media (max-width:920px){.cartao{margin-left:16px;margin-right:16px}}
+
+/* Etapas */
+.etapas{display:flex;border-bottom:1px solid var(--linha)}
+.etapa{flex:1;display:flex;align-items:center;gap:10px;padding:18px 24px;font-size:13px;font-weight:600;color:var(--cinza);position:relative}
+.etapa .n{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--off);font-weight:700;font-size:13px;flex:none}
+.etapa.ativa{color:var(--grafite)}
+.etapa.ativa .n{background:var(--roxo);color:#fff}
+.etapa.feita .n{background:var(--roxo-claro);color:var(--roxo)}
+.etapa.ativa::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;background:var(--roxo)}
+@media (max-width:560px){.etapa{padding:14px 16px;font-size:12px}.etapa span.t-long{display:none}}
+
+.passo{display:none;padding:32px}
+.passo.ativo{display:block}
+@media (max-width:560px){.passo{padding:24px 16px}}
+.passo-tit{font-size:20px;font-weight:700}
+.passo-sub{color:var(--grafite-2);font-size:14px;margin-top:4px;max-width:640px}
+.passo-sub b{color:var(--grafite)}
+
+.secao{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--roxo);margin:28px 0 14px;display:flex;align-items:center;gap:10px}
+.secao::after{content:"";flex:1;height:1px;background:var(--linha)}
+
+.grade{display:grid;grid-template-columns:1fr 1fr;gap:18px 20px}
+.grade .inteiro{grid-column:1/-1}
+@media (max-width:640px){.grade{grid-template-columns:1fr}}
+
+.campo label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.campo label .ob{color:var(--roxo)}
+.campo .dica{display:block;font-size:12px;color:var(--cinza);font-weight:500;margin:-3px 0 6px}
+.campo input,.campo select{width:100%;font:inherit;font-size:14px;color:var(--grafite);background:var(--off);border:1.5px solid transparent;border-radius:12px;padding:12px 14px;outline:none;transition:border-color .15s,background .15s;appearance:none}
+.campo select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234A4A52' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
+.campo input::placeholder{color:#A9A8B2}
+.campo input:focus,.campo select:focus{border-color:var(--roxo);background:#fff}
+.campo.erro input,.campo.erro select,.campo.erro .upload{border-color:var(--erro);background:#FDF3F5}
+.campo .msg{display:none;font-size:12px;color:var(--erro);margin-top:5px;font-weight:500}
+.campo.erro .msg{display:block}
+
+.senha{position:relative}
+.senha input{padding-right:84px}
+.senha .ver{position:absolute;right:8px;top:50%;transform:translateY(-50%);font:inherit;font-size:12px;font-weight:600;color:var(--roxo);background:none;border:0;padding:6px 8px;cursor:pointer;border-radius:8px}
+.senha .ver:hover{background:var(--roxo-claro)}
+.upload{border:1.5px dashed #C9C4E8;border-radius:12px;background:var(--off);padding:22px;text-align:center;font-size:13px;color:var(--grafite-2);cursor:pointer;transition:.15s}
+.upload:hover,.upload.arrastando{border-color:var(--roxo);background:var(--roxo-claro)}
+.upload b{color:var(--roxo)}
+.upload .previa{display:none;align-items:center;gap:12px;justify-content:center}
+.upload .previa img{width:48px;height:48px;object-fit:contain;border-radius:8px;background:#fff}
+.upload.tem-arquivo .vazio{display:none}
+.upload.tem-arquivo .previa{display:flex}
+
+.aviso{display:flex;gap:12px;background:var(--roxo-claro);border-radius:14px;padding:16px;font-size:13px;color:var(--grafite-2)}
+.aviso svg{flex:none;width:20px;height:20px;color:var(--roxo);margin-top:1px}
+.aviso b{color:var(--grafite)}
+.aviso ol{margin:6px 0 0 18px}
+
+.check{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--grafite-2);cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--roxo);margin-top:2px;flex:none}
+
+.acoes{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:32px;padding-top:24px;border-top:1px solid var(--linha)}
+.btn{font:inherit;font-weight:700;font-size:14px;border:0;border-radius:12px;padding:14px 26px;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:8px}
+.btn-prim{background:var(--roxo);color:#fff}
+.btn-prim:hover{background:#4C35C7}
+.btn-prim:disabled{opacity:.6;cursor:wait}
+.btn-sec{background:transparent;color:var(--grafite-2)}
+.btn-sec:hover{color:var(--grafite)}
+.lgpd{font-size:12px;color:var(--cinza);display:flex;align-items:center;gap:6px}
+.lgpd svg{width:14px;height:14px}
+
+/* Sucesso */
+.sucesso{display:none;padding:56px 32px;text-align:center}
+.sucesso.ativo{display:block}
+.sucesso .icone{width:64px;height:64px;border-radius:50%;background:var(--roxo-claro);color:var(--roxo);display:grid;place-items:center;margin:0 auto 20px}
+.sucesso h2{font-size:24px;font-weight:800}
+.sucesso p{color:var(--grafite-2);max-width:440px;margin:10px auto 0;font-size:15px}
+
+.rodape{text-align:center;font-size:12px;color:var(--cinza);padding:0 16px 40px}
+.spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:g .7s linear infinite;display:none}
+.btn.carregando .spin{display:inline-block}
+@keyframes g{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="topo-in">
+    <div class="marca">
+      <svg viewBox="0 0 200 200" aria-hidden="true">
+        <path d="M40 168 V58 L100 124 L158 54" fill="none" stroke="#8B74F0" stroke-width="26" stroke-linejoin="miter"/>
+        <polygon points="180,28 173,67 143,41" fill="#8B74F0"/>
+      </svg>
+      <div>
+        <div class="marca-nome">MAXWEL<b>ADS</b></div>
+        <div class="marca-slogan">Tráfego pago e vendas</div>
+      </div>
+    </div>
+    <h1>Vamos começar o seu projeto.</h1>
+    <p>Preencha os dados abaixo em duas etapas rápidas. Leva cerca de 5 minutos e já deixa sua campanha e seu contrato encaminhados.</p>
+  </div>
+</header>
+
+<main class="cartao">
+  <nav class="etapas" aria-label="Etapas">
+    <div class="etapa ativa" data-etapa="1"><span class="n">1</span><span>Briefing <span class="t-long">e acessos</span></span></div>
+    <div class="etapa" data-etapa="2"><span class="n">2</span><span>Dados <span class="t-long">para o</span> contrato</span></div>
+  </nav>
+
+  <form id="form" novalidate>
+    <!-- ================= ETAPA 1 ================= -->
+    <section class="passo ativo" data-passo="1">
+      <h2 class="passo-tit">Briefing — dados de acesso</h2>
+      <p class="passo-sub">Informações importantes para a continuidade do projeto. Seus dados são tratados com cuidado, conforme previsto em contrato e na <b>LGPD</b> (Lei Geral de Proteção de Dados).</p>
+
+      <div class="secao">Empresa</div>
+      <div class="grade">
+        <div class="campo"><label>Nome da empresa <span class="ob">*</span></label><input name="empresa" required placeholder="Ex.: Loja Exemplo"><span class="msg">Informe o nome da empresa</span></div>
+        <div class="campo"><label>Ramo de atuação <span class="ob">*</span></label><input name="ramo" required placeholder="Ex.: Moda feminina"><span class="msg">Informe o ramo de atuação</span></div>
+        <div class="campo"><label>CNPJ <span class="ob">*</span></label><input name="cnpj" required data-mascara="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00"><span class="msg">CNPJ inválido</span></div>
+        <div class="campo"><label>Site <span class="ob">*</span></label><span class="dica">Pode ser o link do perfil do Instagram</span><input name="site" required placeholder="instagram.com/suaempresa"><span class="msg">Informe o site ou perfil</span></div>
+        <div class="campo inteiro"><label>Logomarca da empresa <span class="ob">*</span></label>
+          <div class="upload" id="upload" tabindex="0">
+            <div class="vazio">Solte o arquivo aqui ou <b>clique para enviar</b><br><small style="color:var(--cinza)">PNG, JPG, SVG ou PDF · até 8 MB</small></div>
+            <div class="previa"><img id="previaImg" alt=""><span id="previaNome"></span></div>
+          </div>
+          <input type="file" id="logo" accept="image/*,.pdf,.svg" hidden>
+          <span class="msg">Envie a logomarca</span>
+        </div>
+      </div>
+
+      <div class="secao">Responsável</div>
+      <div class="grade">
+        <div class="campo"><label>Nome completo do responsável <span class="ob">*</span></label><input name="responsavel" required autocomplete="name"><span class="msg">Informe o nome completo</span></div>
+        <div class="campo"><label>CPF <span class="ob">*</span></label><input name="cpf" required data-mascara="cpf" inputmode="numeric" placeholder="000.000.000-00"><span class="msg">CPF inválido</span></div>
+        <div class="campo"><label>E-mail <span class="ob">*</span></label><input name="email" type="email" required autocomplete="email" placeholder="voce@empresa.com"><span class="msg">E-mail inválido</span></div>
+        <div class="campo"><label>WhatsApp comercial <span class="ob">*</span></label><span class="dica">Número que receberá os leads</span><input name="whatsapp_comercial" required data-mascara="fone" inputmode="tel" placeholder="(99) 99999-9999"><span class="msg">WhatsApp inválido</span></div>
+      </div>
+
+      <div class="secao">Redes sociais</div>
+      <div class="grade">
+        <div class="campo"><label>Login do Facebook <span class="ob">*</span></label><span class="dica">E-mail ou telefone usado para acessar o Facebook</span><input name="login_facebook" required><span class="msg">Informe o login do Facebook</span></div>
+        <div class="campo"><label>Senha do Facebook <span class="ob">*</span></label><span class="dica">Usada apenas para configurar seu acesso</span><div class="senha"><input name="senha_facebook" type="password" required autocomplete="off"><button type="button" class="ver" aria-label="Mostrar senha">Mostrar</button></div><span class="msg">Informe a senha do Facebook</span></div>
+        <div class="campo"><label>Login do Instagram <span class="ob">*</span></label><span class="dica">@ do seu perfil</span><input name="instagram" required placeholder="@suaempresa"><span class="msg">Informe o @ do perfil</span></div>
+        <div class="campo"><label>Senha do Instagram <span class="ob">*</span></label><span class="dica">Usada apenas para configurar seu acesso</span><div class="senha"><input name="senha_instagram" type="password" required autocomplete="off"><button type="button" class="ver" aria-label="Mostrar senha">Mostrar</button></div><span class="msg">Informe a senha do Instagram</span></div>
+        <div class="campo"><label>Método de pagamento dos anúncios <span class="ob">*</span></label><span class="dica">Como você pretende pagar pelos anúncios</span>
+          <select name="pagamento_anuncios" required>
+            <option value="">Selecionar opção…</option>
+            <option>Cartão de crédito</option>
+            <option>Pix (saldo pré-pago)</option>
+            <option>Boleto (saldo pré-pago)</option>
+          </select><span class="msg">Selecione uma opção</span></div>
+      </div>
+
+      <div class="acoes">
+        <span class="lgpd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Dados protegidos pela LGPD</span>
+        <button type="button" class="btn btn-prim" id="avancar">Continuar <span aria-hidden="true">→</span></button>
+      </div>
+    </section>
+
+    <!-- ================= ETAPA 2 ================= -->
+    <section class="passo" data-passo="2">
+      <h2 class="passo-tit">Dados para o contrato</h2>
+      <p class="passo-sub">O contrato fica pronto para assinatura em até 48h. <b>O link chega diretamente no e-mail informado.</b> Alguns campos já vieram preenchidos da etapa anterior — é só conferir.</p>
+
+      <div class="secao">Empresa</div>
+      <div class="grade">
+        <div class="campo"><label>Razão social <span class="ob">*</span></label><input name="razao_social" required><span class="msg">Informe a razão social</span></div>
+        <div class="campo"><label>Nome fantasia <span class="ob">*</span></label><input name="nome_fantasia" required data-copia="empresa"><span class="msg">Informe o nome fantasia</span></div>
+        <div class="campo"><label>CNPJ <span class="ob">*</span></label><input name="cnpj_contrato" required data-mascara="cnpj" data-copia="cnpj" inputmode="numeric"><span class="msg">CNPJ inválido</span></div>
+      </div>
+
+      <div class="secao">Contratante</div>
+      <div class="grade">
+        <div class="campo"><label>Nome completo do responsável <span class="ob">*</span></label><input name="responsavel_contrato" required data-copia="responsavel"><span class="msg">Informe o nome completo</span></div>
+        <div class="campo"><label>CPF <span class="ob">*</span></label><input name="cpf_contrato" required data-mascara="cpf" data-copia="cpf" inputmode="numeric"><span class="msg">CPF inválido</span></div>
+        <div class="campo"><label>Estado civil <span class="ob">*</span></label>
+          <select name="estado_civil" required>
+            <option value="">Selecionar opção…</option>
+            <option>Solteiro(a)</option><option>Casado(a)</option><option>União estável</option><option>Divorciado(a)</option><option>Viúvo(a)</option>
+          </select><span class="msg">Selecione uma opção</span></div>
+        <div class="campo"><label>Profissão <span class="ob">*</span></label><input name="profissao" required><span class="msg">Informe a profissão</span></div>
+        <div class="campo"><label>WhatsApp pessoal <span class="ob">*</span></label><input name="whatsapp_pessoal" required data-mascara="fone" inputmode="tel" placeholder="(99) 99999-9999"><span class="msg">WhatsApp inválido</span></div>
+        <div class="campo"><label>E-mail <span class="ob">*</span></label><span class="dica">O link do contrato chega aqui</span><input name="email_contrato" type="email" required data-copia="email"><span class="msg">E-mail inválido</span></div>
+      </div>
+
+      <div class="secao">Endereço</div>
+      <div class="grade">
+        <div class="campo"><label>CEP <span class="ob">*</span></label><input name="cep" required data-mascara="cep" inputmode="numeric" placeholder="00000-000"><span class="msg">CEP inválido</span></div>
+        <div class="campo"><label>Cidade/UF <span class="ob">*</span></label><input name="cidade_uf" required placeholder="Imperatriz/MA"><span class="msg">Informe cidade e UF</span></div>
+        <div class="campo inteiro"><label>Endereço residencial <span class="ob">*</span></label><input name="endereco" required placeholder="Rua, número, bairro"><span class="msg">Informe o endereço</span></div>
+      </div>
+
+      <div class="secao">Plano</div>
+      <div class="grade">
+        <div class="campo"><label>Plano escolhido <span class="ob">*</span></label>
+          <select name="plano" required>
+            <option value="">Selecionar opção…</option>
+            <option data-valor="500">Gestão de tráfego</option>
+            <option data-valor="">Personalizado</option>
+          </select><span class="msg">Selecione um plano</span></div>
+        <div class="campo"><label>Valor do contrato (mês) <span class="ob">*</span></label><input name="valor_mensal" required data-mascara="moeda" inputmode="numeric" placeholder="R$ 0,00"><span class="msg">Informe o valor</span></div>
+        <div class="campo"><label>E-mail da testemunha</label><input name="email_testemunha" type="email"><span class="msg">E-mail inválido</span></div>
+        <div class="campo inteiro"><label class="check"><input type="checkbox" name="aceite" required> <span>Confirmo que as informações estão corretas e autorizo o uso dos dados para a execução do serviço e elaboração do contrato, conforme a LGPD.</span></label><span class="msg">Marque para continuar</span></div>
+      </div>
+
+      <div class="acoes">
+        <button type="button" class="btn btn-sec" id="voltar">← Voltar</button>
+        <button type="submit" class="btn btn-prim" id="enviar"><span class="spin"></span><span class="txt">Enviar cadastro</span></button>
+      </div>
+    </section>
+
+    <section class="sucesso" id="sucesso">
+      <div class="icone"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <h2>Cadastro recebido!</h2>
+      <p>Obrigado. Em até 48h o link do contrato chega no seu e-mail, e o passo a passo de acesso vai pelo WhatsApp.</p>
+    </section>
+  </form>
+</main>
+
+<p class="rodape">Maxwel Ads · Tráfego pago e vendas</p>
+
+<script>
+// ====== CONFIGURAÇÃO ======
+// Cole entre as aspas a URL do Web App do Google Apps Script.
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbxl1UYoiktVmFqbGHPgSlbP_bQ8wfiIsRNb3cYH7AtlmoO7EMMGqYNRn86VtPHO-S_c/exec";
+
+const $ = (s, c=document) => c.querySelector(s);
+const $$ = (s, c=document) => [...c.querySelectorAll(s)];
+const form = $('#form');
+const so = v => v.replace(/\D/g,'');
+
+// ---- Máscaras
+const mascaras = {
+  cpf: v => so(v).slice(0,11).replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2'),
+  cnpj: v => so(v).slice(0,14).replace(/^(\d{2})(\d)/,'$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3').replace(/\.(\d{3})(\d)/,'.$1/$2').replace(/(\d{4})(\d)/,'$1-$2'),
+  cep: v => so(v).slice(0,8).replace(/(\d{5})(\d)/,'$1-$2'),
+  fone: v => { const d=so(v).slice(0,11); return d.length>10 ? d.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3') : d.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3').replace(/\D+$/,''); },
+  moeda: v => { const d=so(v); if(!d) return ''; return 'R$ ' + (parseInt(d,10)/100).toLocaleString('pt-BR',{minimumFractionDigits:2}); }
+};
+$$('[data-mascara]').forEach(i => i.addEventListener('input', () => { i.value = mascaras[i.dataset.mascara](i.value); }));
+
+// ---- Validações
+function cpfValido(c){ c=so(c); if(c.length!==11||/^(\d)\1+$/.test(c)) return false;
+  for(let t=9;t<11;t++){ let s=0; for(let i=0;i<t;i++) s+=c[i]*((t+1)-i); if(((10*s)%11)%10!=c[t]) return false; } return true; }
+function cnpjValido(c){ c=so(c); if(c.length!==14||/^(\d)\1+$/.test(c)) return false;
+  const calc=n=>{ let s=0,p=n-7; for(let i=0;i<n;i++){ s+=c[i]*p--; if(p<2)p=9; } const r=s%11; return r<2?0:11-r; };
+  return calc(12)==c[12] && calc(13)==c[13]; }
+
+function valida(campo){
+  const el = campo.querySelector('input,select'); if(!el) return true;
+  let ok = true; const v = el.type==='checkbox' ? el.checked : el.value.trim();
+  if(el.required && !v) ok = false;
+  else if(v && el.type==='email') ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  else if(v && el.dataset.mascara==='cpf') ok = cpfValido(v);
+  else if(v && el.dataset.mascara==='cnpj') ok = cnpjValido(v);
+  else if(v && el.dataset.mascara==='fone') ok = so(v).length>=10;
+  else if(v && el.dataset.mascara==='cep') ok = so(v).length===8;
+  campo.classList.toggle('erro', !ok); return ok;
+}
+$$('.campo').forEach(c => c.addEventListener('input', () => c.classList.contains('erro') && valida(c)));
+$$('.campo select, .campo input[type=checkbox]').forEach(el => el.addEventListener('change', () => valida(el.closest('.campo'))));
+
+// ---- Mostrar/ocultar senha
+$$('.senha .ver').forEach(b => b.addEventListener('click', () => {
+  const i = b.previousElementSibling; const mostrar = i.type === 'password';
+  i.type = mostrar ? 'text' : 'password'; b.textContent = mostrar ? 'Ocultar' : 'Mostrar';
+}));
+
+// ---- Upload da logo
+const up = $('#upload'), inputLogo = $('#logo'); let logo = null;
+up.addEventListener('click', () => inputLogo.click());
+up.addEventListener('keydown', e => (e.key==='Enter'||e.key===' ') && inputLogo.click());
+['dragover','dragenter'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.add('arrastando'); }));
+['dragleave','drop'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.remove('arrastando'); }));
+up.addEventListener('drop', e => e.dataTransfer.files[0] && lerLogo(e.dataTransfer.files[0]));
+inputLogo.addEventListener('change', () => inputLogo.files[0] && lerLogo(inputLogo.files[0]));
+function lerLogo(f){
+  const campo = up.closest('.campo');
+  if(f.size > 8*1024*1024){ campo.classList.add('erro'); campo.querySelector('.msg').textContent='Arquivo acima de 8 MB'; return; }
+  const r = new FileReader();
+  r.onload = () => { logo = { nome:f.name, tipo:f.type, base64:r.result.split(',')[1] };
+    $('#previaImg').src = f.type.startsWith('image/') ? r.result : '';
+    $('#previaImg').style.display = f.type.startsWith('image/') ? '' : 'none';
+    $('#previaNome').textContent = f.name; up.classList.add('tem-arquivo'); campo.classList.remove('erro'); };
+  r.readAsDataURL(f);
+}
+function validaLogo(){ const c = up.closest('.campo'); c.querySelector('.msg').textContent='Envie a logomarca'; c.classList.toggle('erro', !logo); return !!logo; }
+
+// ---- Navegação entre etapas
+function irPara(n){
+  $$('.passo').forEach(p => p.classList.toggle('ativo', p.dataset.passo==n));
+  $$('.etapa').forEach(e => { e.classList.toggle('ativa', e.dataset.etapa==n); e.classList.toggle('feita', e.dataset.etapa<n); });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function validaPasso(n){
+  const p = $(`.passo[data-passo="${n}"]`);
+  let ok = $$('.campo', p).map(valida).every(Boolean);
+  if(n==1) ok = validaLogo() && ok;
+  if(!ok){ const e = $('.campo.erro', p); e && e.scrollIntoView({behavior:'smooth',block:'center'}); }
+  return ok;
+}
+$('#avancar').addEventListener('click', () => {
+  if(!validaPasso(1)) return;
+  // Copia os dados repetidos para a etapa 2 (só se ainda estiverem vazios)
+  $$('[data-copia]').forEach(i => { if(!i.value) i.value = form.elements[i.dataset.copia].value; });
+  irPara(2);
+});
+$('#voltar').addEventListener('click', () => irPara(1));
+
+// Preenche o valor ao escolher o plano
+form.elements.plano.addEventListener('change', e => {
+  const v = e.target.selectedOptions[0]?.dataset.valor; const campo = form.elements.valor_mensal;
+  if(v){ campo.value = mascaras.moeda(String(v*100)); valida(campo.closest('.campo')); }
+});
+
+// ---- Envio
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  if(!validaPasso(2)) return;
+  const btn = $('#enviar'); btn.disabled = true; btn.classList.add('carregando'); $('.txt',btn).textContent='Enviando…';
+  const dados = Object.fromEntries(new FormData(form));
+  dados.aceite = 'Sim'; dados.enviado_em = new Date().toLocaleString('pt-BR'); dados.logo = logo;
+  try{
+    if(ENDPOINT){
+      await fetch(ENDPOINT, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(dados) });
+    } else {
+      console.log('Modo de teste — dados que seriam enviados:', {...dados, logo: logo && {nome:logo.nome}});
+      await new Promise(r => setTimeout(r, 700));
+    }
+    $$('.passo').forEach(p => p.classList.remove('ativo'));
+    $$('.etapa').forEach(x => { x.classList.remove('ativa'); x.classList.add('feita'); });
+    $('#sucesso').classList.add('ativo'); window.scrollTo({top:0,behavior:'smooth'});
+  } catch(err){
+    alert('Não foi possível enviar agora. Verifique sua internet e tente de novo.');
+    btn.disabled = false; btn.classList.remove('carregando'); $('.txt',btn).textContent='Enviar cadastro';
+  }
+});
+</script>
+</body>
+</html>
